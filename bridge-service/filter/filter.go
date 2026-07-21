@@ -32,6 +32,7 @@ f.allowedIn["player_join"] = true
 f.allowedIn["player_leave"] = true
 f.allowedIn["chat_message"] = true
 	f.allowedIn["time_sync"] = true
+	f.allowedIn["weather_sync"] = true
 	f.allowedIn["game_event"] = true
 f.allowedIn["player_move"] = true
 

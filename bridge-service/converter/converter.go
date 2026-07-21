@@ -324,3 +324,44 @@ Payload: map[string]interface{}{
 },
 }
 }
+
+func ConvertWeatherSync(original protocol.Message) protocol.Message {
+payload := original.Payload
+weather, _ := payload["weather"].(string)
+wind, _ := payload["wind"].(string)
+
+mcRain := false
+mcThunder := false
+
+switch weather {
+case "rain":
+mcRain = true
+case "heavy_rain":
+mcRain = true
+mcThunder = true
+case "sandstorm":
+mcRain = true
+mcThunder = true
+case "blizzard":
+mcRain = true
+case "clear":
+mcRain = false
+mcThunder = false
+}
+
+mcWind := false
+if wind == "strong" || wind == "storm" {
+mcWind = true
+}
+
+return protocol.Message{
+Type: "weather_sync",
+Payload: map[string]interface{}{
+"mc_rain":    mcRain,
+"mc_thunder": mcThunder,
+"mc_wind":    mcWind,
+"tr_weather": weather,
+"tr_wind":    wind,
+},
+}
+}

@@ -10,6 +10,7 @@ public class PacketHandler
 {
     private LayerManager layerManager;
     private long lastTimeUpdate = 0;
+    private long lastWeatherUpdate = 0;
 
     public void setLayerManager(LayerManager layerManager)
     {
@@ -43,6 +44,9 @@ public class PacketHandler
                 break;
             case "time_sync":
                 handleTimeSync(msg.payload);
+                break;
+            case "weather_sync":
+                handleWeatherSync(msg.payload);
                 break;
             default:
                 break;
@@ -94,6 +98,26 @@ public class PacketHandler
         if (mc.level != null) {
             long mcTime = ((Number) payload.get("mc_time")).longValue();
             mc.level.setDayTime(mcTime);
+        }
+    }
+
+    private void handleWeatherSync(Map<String, Object> payload) {
+        long now = System.currentTimeMillis();
+        if (now - lastWeatherUpdate < 10000) return;
+        lastWeatherUpdate = now;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level != null) {
+            boolean rain = (Boolean) payload.get("mc_rain");
+            boolean thunder = (Boolean) payload.get("mc_thunder");
+
+            if (rain) {
+                mc.level.setRainLevel(1.0f);
+                mc.level.setThunderLevel(thunder ? 1.0f : 0.0f);
+            } else {
+                mc.level.setRainLevel(0.0f);
+                mc.level.setThunderLevel(0.0f);
+            }
         }
     }
 }

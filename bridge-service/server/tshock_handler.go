@@ -49,6 +49,8 @@ case "game_event":
 toSend = converter.ConvertEvent(msg)
 case "time_sync":
 toSend = converter.ConvertTimeSync(msg)
+case "weather_sync":
+toSend = converter.ConvertWeatherSync(msg)
 case "chat_message":
 toSend = converter.ConvertChatTRToMC(msg)
 default:

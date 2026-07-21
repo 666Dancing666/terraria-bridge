@@ -20,6 +20,7 @@ namespace TerrariaBridge.Handlers
         {
             ServerApi.Hooks.NpcSpawn.Register(TerrariaBridgePlugin.Instance, OnNpcSpawn);
             ServerApi.Hooks.NpcKilled.Register(TerrariaBridgePlugin.Instance, OnNpcKilled);
+            ServerApi.Hooks.PlayerDeath.Register(TerrariaBridgePlugin.Instance, OnPlayerDeath);
             ServerApi.Hooks.GameUpdate.Register(TerrariaBridgePlugin.Instance, OnGameUpdate);
         }
 
@@ -132,6 +133,15 @@ namespace TerrariaBridge.Handlers
             {
                 lastEclipse = Main.eclipse;
                 SendEvent(lastEclipse ? "eclipse_start" : "eclipse_end", "");
+            }
+        }
+
+        private void OnPlayerDeath(PlayerDeathEventArgs args)
+        {
+            var player = TShock.Players[args.PlayerId];
+            if (player != null)
+            {
+                SendEvent("player_death", player.Name);
             }
         }
 

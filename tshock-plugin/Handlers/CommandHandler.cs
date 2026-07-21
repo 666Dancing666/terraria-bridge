@@ -105,6 +105,8 @@ namespace TerrariaBridge.Handlers
                     switch (action)
                     {
                         case "jump":
+                            player.controlJump = true;
+                            player.releaseJump = false;
                             if (player.velocity.Y == 0)
                             {
                                 player.velocity.Y = -player.jumpSpeed;
@@ -113,6 +115,23 @@ namespace TerrariaBridge.Handlers
                         case "use_item":
                             player.controlUseItem = true;
                             break;
+                        case "grapple":
+                        {
+                            float targetX = player.position.X + player.direction * 160;
+                            float targetY = player.position.Y - 80;
+
+                            int tileX = (int)(targetX / 16);
+                            int tileY = (int)(targetY / 16);
+
+                            if (WorldGen.InWorld(tileX, tileY) && Main.tile[tileX, tileY] != null && Main.tile[tileX, tileY].HasTile)
+                            {
+                                player.position.X = targetX;
+                                player.position.Y = targetY;
+                                player.velocity.X = 0;
+                                player.velocity.Y = 0;
+                            }
+                            break;
+                        }
                         case "grapple":
                             player.controlHook = true;
                             break;

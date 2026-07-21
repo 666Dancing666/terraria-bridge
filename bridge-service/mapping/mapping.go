@@ -26,7 +26,7 @@ func TRTileToMC(trID int) string {
 if entry, ok := Tiles[trID]; ok {
 return entry.MCName
 }
-return "minecraft:stone"
+return "terrariabridge:unknown_block"
 }
 
 func MCTileToTR(mcName string) int {
@@ -42,7 +42,7 @@ func TRWallToMC(trID int) string {
 if entry, ok := Walls[trID]; ok {
 return entry.MCName
 }
-return "minecraft:gray_wool"
+return "terrariabridge:unknown_wall"
 }
 
 func TRItemToMC(trID int) string {

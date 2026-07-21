@@ -19,9 +19,12 @@ defer logger.Default.Close()
 mapping.InitTiles()
 mapping.InitItems()
 mapping.InitEntities()
+mapping.InitSounds()
 
-log.Printf("Mappings loaded: %d tiles, %d items, %d walls, %d entities",
-len(mapping.Tiles), len(mapping.Items), len(mapping.Walls), len(mapping.Entities))
+log.Printf("Mappings: %d tiles, %d items, %d walls, %d entities, %d sounds",
+len(mapping.Tiles), len(mapping.Items),
+len(mapping.Walls), len(mapping.Entities),
+len(mapping.Sounds))
 log.Println("Log path:", cfg.LogPath)
 server.Start(cfg)
 }

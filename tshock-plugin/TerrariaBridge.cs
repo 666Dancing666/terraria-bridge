@@ -15,21 +15,21 @@ namespace TerrariaBridge
     {
         public override string Name => "TerrariaBridge";
         public override string Author => "TerrariaBridge Team";
-        public override string Description => "连接泰拉瑞亚和我的世界的桥接插件";
+        public override string Description => "Terraria-Minecraft bridge plugin";
         public override Version Version => new Version(0, 1, 0);
+
+        public static TerrariaBridgePlugin Instance { get; private set; }
 
         private BridgeClient _client;
         private BridgeConfig _config;
         private WorldSyncHandler _worldSync;
         private EntityHandler _entityHandler;
         private CommandHandler _commandHandler;
+        private EventHandler _eventHandler;
 
-        private Dictionary<int, bool> _syncedPlayers = new Dictionary<int, bool>();
-        private DateTime _lastEntitySync = DateTime.MinValue;
-
-        public TerrariaBridgePlugin(Main game)
-            : base(game)
+        public TerrariaBridgePlugin(Main game) : base(game)
         {
+            Instance = this;
         }
 
         public override void Initialize()
@@ -39,8 +39,8 @@ namespace TerrariaBridge
             _worldSync = new WorldSyncHandler(_client);
             _entityHandler = new EntityHandler(_client);
             _commandHandler = new CommandHandler(_client);
+            _eventHandler = new EventHandler(_client);
 
-            // 注册事件
             _client.OnConnected += OnBridgeConnected;
             _client.OnDisconnected += OnBridgeDisconnected;
             _client.OnMessageReceived += OnMessageReceived;
@@ -49,7 +49,8 @@ namespace TerrariaBridge
             ServerApi.Hooks.ServerLeave.Register(this, OnPlayerLeave);
             ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
 
-            // 连接到中间层
+            _eventHandler.Register();
+
             Task.Run(async () => await _client.ConnectAsync());
         }
 
@@ -68,13 +69,12 @@ namespace TerrariaBridge
 
         private void OnBridgeConnected()
         {
-            TShock.Log.ConsoleInfo("TerrariaBridge: 中间层连接成功，开始同步");
+            TShock.Log.ConsoleInfo("TerrariaBridge: Connected to bridge");
         }
 
         private void OnBridgeDisconnected(string reason)
         {
-            TShock.Log.ConsoleWarn(
-                $"TerrariaBridge: 中间层断开 ({reason})，5秒后重连");
+            TShock.Log.ConsoleWarn($"TerrariaBridge: Disconnected ({reason}), retrying in 5s");
             Task.Run(async () =>
             {
                 await Task.Delay(5000);
@@ -97,7 +97,6 @@ namespace TerrariaBridge
                 var joinMsg = _entityHandler.CreatePlayerJoin(player.TPlayer);
                 await _client.SendAsync(joinMsg);
 
-                // 发送该玩家周围的世界快照
                 var snapshot = _worldSync.CreateFullSnapshot(
                     (int)(player.TPlayer.position.X / 16),
                     (int)(player.TPlayer.position.Y / 16),
@@ -119,71 +118,6 @@ namespace TerrariaBridge
         private void OnGameUpdate(GameUpdateEventArgs args)
         {
             if (!_client.IsConnected) return;
-
-            // 限制实体同步频率
-            var now = DateTime.UtcNow;
-            if ((now - _lastEntitySync).TotalMilliseconds < _config.SyncIntervalMs)
-                return;
-            _lastEntitySync = now;
-
-            Task.Run(async () =>
-            {
-                await SyncEntities();
-            });
-        }
-
-        private async Task SyncEntities()
-        {
-            try
-            {
-                // 同步所有活跃玩家
-                for (int i = 0; i < Main.player.Length; i++)
-                {
-                    var player = Main.player[i];
-                    if (player != null && player.active)
-                    {
-                        var msg = _entityHandler.CreatePlayerUpdate(player);
-                        await _client.SendAsync(msg);
-                    }
-                }
-
-                // 同步所有活跃NPC
-                for (int i = 0; i < Main.npc.Length; i++)
-                {
-                    var npc = Main.npc[i];
-                    if (npc != null && npc.active)
-                    {
-                        var msg = _entityHandler.CreateNPCUpdate(npc);
-                        await _client.SendAsync(msg);
-                    }
-                }
-
-                // 同步掉落物品
-                for (int i = 0; i < Main.item.Length; i++)
-                {
-                    var item = Main.item[i];
-                    if (item != null && item.active)
-                    {
-                        var msg = _entityHandler.CreateItemUpdate(item, i);
-                        await _client.SendAsync(msg);
-                    }
-                }
-
-                // 同步投射物
-                for (int i = 0; i < Main.projectile.Length; i++)
-                {
-                    var proj = Main.projectile[i];
-                    if (proj != null && proj.active)
-                    {
-                        var msg = _entityHandler.CreateProjectileUpdate(proj);
-                        await _client.SendAsync(msg);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                TShock.Log.ConsoleError($"TerrariaBridge: 实体同步失败 - {ex.Message}");
-            }
         }
     }
 }

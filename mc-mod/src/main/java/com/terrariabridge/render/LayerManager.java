@@ -2,7 +2,11 @@ package com.terrariabridge.render;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +27,8 @@ public class LayerManager
         int liquidType;
         int liquidAmount;
         boolean hasTile;
+        String mcBlock;
+        String mcWall;
     }
 
     public static class EntityData
@@ -35,6 +41,7 @@ public class LayerManager
         public int health, maxHealth;
         public int direction;
         public int netId;
+        public String mcEntity;
     }
 
     public void updateTile(Map<String, Object> data)
@@ -53,9 +60,19 @@ public class LayerManager
             else { layer.tileType = 0; layer.hasTile = false; }
         }
 
+        if (data.containsKey("mc_block"))
+        {
+            layer.mcBlock = (String) data.get("mc_block");
+        }
+
         if (data.containsKey("wall_type"))
         {
             layer.wallType = ((Number) data.get("wall_type")).intValue();
+        }
+
+        if (data.containsKey("mc_wall"))
+        {
+            layer.mcWall = (String) data.get("mc_wall");
         }
 
         if (data.containsKey("liquid_type"))
@@ -78,6 +95,7 @@ public class LayerManager
         if (data.containsKey("health")) entity.health = ((Number) data.get("health")).intValue();
         if (data.containsKey("max_health")) entity.maxHealth = ((Number) data.get("max_health")).intValue();
         if (data.containsKey("net_id")) entity.netId = ((Number) data.get("net_id")).intValue();
+        if (data.containsKey("mc_entity")) entity.mcEntity = (String) data.get("mc_entity");
     }
 
     public void removeEntity(Map<String, Object> data)
@@ -86,22 +104,17 @@ public class LayerManager
         entities.remove(id);
     }
 
-    public int getTileType(int x, int y)
-    {
-        LayerData layer = tileData.get(posKey(x, y));
-        return (layer != null && layer.hasTile) ? layer.tileType : 0;
-    }
-
-    public int getWallType(int x, int y)
-    {
-        LayerData layer = tileData.get(posKey(x, y));
-        return layer != null ? layer.wallType : 0;
-    }
-
     public Collection<EntityData> getAllEntities() { return entities.values(); }
     public EntityData getEntity(int id) { return entities.get(id); }
 
     private static long posKey(int x, int y) { return ((long) x << 32) | (y & 0xFFFFFFFFL); }
+
+    private Block getBlock(String mcName)
+    {
+        if (mcName == null || mcName.isEmpty()) return null;
+        ResourceLocation loc = new ResourceLocation(mcName);
+        return ForgeRegistries.BLOCKS.getValue(loc);
+    }
 
     public void applyToWorld(Level level, int minX, int minY, int maxX, int maxY)
     {
@@ -110,14 +123,49 @@ public class LayerManager
             for (int y = minY; y <= maxY; y++)
             {
                 LayerData layer = tileData.get(posKey(x, y));
-                int tile = (layer != null && layer.hasTile) ? layer.tileType : 0;
-                int wall = (layer != null) ? layer.wallType : 0;
 
-                level.setBlock(new BlockPos(x, y, LAYER_FOREGROUND),
-                    tile > 0 ? Blocks.STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
-                level.setBlock(new BlockPos(x, y, LAYER_FURNITURE), Blocks.AIR.defaultBlockState(), 3);
-                level.setBlock(new BlockPos(x, y, LAYER_WALL),
-                    wall > 0 ? Blocks.GRAY_WOOL.defaultBlockState() : Blocks.AIR.defaultBlockState(), 3);
+                if (layer != null && layer.hasTile && layer.mcBlock != null)
+                {
+                    Block block = getBlock(layer.mcBlock);
+                    if (block != null && block != Blocks.AIR)
+                    {
+                        level.setBlock(new BlockPos(x, y, LAYER_FOREGROUND),
+                            block.defaultBlockState(), 3);
+                    }
+                    else
+                    {
+                        level.setBlock(new BlockPos(x, y, LAYER_FOREGROUND),
+                            Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+                else
+                {
+                    level.setBlock(new BlockPos(x, y, LAYER_FOREGROUND),
+                        Blocks.AIR.defaultBlockState(), 3);
+                }
+
+                if (layer != null && layer.mcWall != null)
+                {
+                    Block block = getBlock(layer.mcWall);
+                    if (block != null && block != Blocks.AIR)
+                    {
+                        level.setBlock(new BlockPos(x, y, LAYER_WALL),
+                            block.defaultBlockState(), 3);
+                    }
+                    else
+                    {
+                        level.setBlock(new BlockPos(x, y, LAYER_WALL),
+                            Blocks.AIR.defaultBlockState(), 3);
+                    }
+                }
+                else
+                {
+                    level.setBlock(new BlockPos(x, y, LAYER_WALL),
+                        Blocks.AIR.defaultBlockState(), 3);
+                }
+
+                level.setBlock(new BlockPos(x, y, LAYER_FURNITURE),
+                    Blocks.AIR.defaultBlockState(), 3);
             }
         }
     }

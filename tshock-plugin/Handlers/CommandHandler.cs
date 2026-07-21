@@ -34,6 +34,9 @@ namespace TerrariaBridge.Handlers
                 case MessageType.PlayerAction:
                     HandlePlayerAction(msg.Payload);
                     break;
+                case "craft_request":
+                    HandleCraftRequest(msg.Payload);
+                    break;
             }
         }
 
@@ -60,10 +63,7 @@ namespace TerrariaBridge.Handlers
         {
             int x = Convert.ToInt32(payload["x"]);
             int y = Convert.ToInt32(payload["y"]);
-            int playerId = payload.ContainsKey("player_id") 
-                ? Convert.ToInt32(payload["player_id"]) : -1;
-
-            TileHelper.BreakTile(x, y, playerId);
+            TileHelper.BreakTile(x, y, -1);
         }
 
         private void HandleTilePlace(Dictionary<string, object> payload)
@@ -71,10 +71,7 @@ namespace TerrariaBridge.Handlers
             int x = Convert.ToInt32(payload["x"]);
             int y = Convert.ToInt32(payload["y"]);
             int tileType = Convert.ToInt32(payload["tile_type"]);
-            int playerId = payload.ContainsKey("player_id") 
-                ? Convert.ToInt32(payload["player_id"]) : -1;
-
-            TileHelper.PlaceTile(x, y, tileType, playerId);
+            TileHelper.PlaceTile(x, y, tileType, -1);
         }
 
         private void HandleInteract(Dictionary<string, object> payload)
@@ -83,13 +80,11 @@ namespace TerrariaBridge.Handlers
             int y = Convert.ToInt32(payload["y"]);
             int playerId = Convert.ToInt32(payload["player_id"]);
 
-            // 打开箱子或交互
             if (playerId >= 0 && playerId < Main.player.Length)
             {
                 var player = Main.player[playerId];
                 if (player != null && player.active)
                 {
-                    // 让玩家与被点击的物体交互
                     player.tileInteractAttempted = true;
                     player.tileInteractionX = x;
                     player.tileInteractionY = y;
@@ -121,6 +116,84 @@ namespace TerrariaBridge.Handlers
                         case "grapple":
                             player.controlHook = true;
                             break;
+                    }
+                }
+            }
+        }
+
+        private void HandleCraftRequest(Dictionary<string, object> payload)
+        {
+            int playerId = -1;
+            if (payload.ContainsKey("player_id"))
+            {
+                string pid = payload["player_id"].ToString();
+                if (pid.StartsWith("MC-"))
+                {
+                    playerId = 0;
+                }
+            }
+
+            int resultId = Convert.ToInt32(payload["result_id"]);
+            int resultCount = Convert.ToInt32(payload["result_count"]);
+
+            var ingredients = payload["ingredients"] as Dictionary<string, object>;
+            if (ingredients == null) return;
+
+            if (playerId >= 0 && playerId < Main.player.Length)
+            {
+                var player = Main.player[playerId];
+                if (player == null || !player.active) return;
+
+                bool hasAll = true;
+                var needed = new Dictionary<int, int>();
+                foreach (var kvp in ingredients)
+                {
+                    int itemId = int.Parse(kvp.Key);
+                    int count = Convert.ToInt32(kvp.Value);
+                    needed[itemId] = count;
+                }
+
+                foreach (var kvp in needed)
+                {
+                    int count = 0;
+                    for (int i = 0; i < player.inventory.Length; i++)
+                    {
+                        if (player.inventory[i].netID == kvp.Key)
+                        {
+                            count += player.inventory[i].stack;
+                        }
+                    }
+                    if (count < kvp.Value)
+                    {
+                        hasAll = false;
+                        break;
+                    }
+                }
+
+                if (hasAll)
+                {
+                    foreach (var kvp in needed)
+                    {
+                        int remaining = kvp.Value;
+                        for (int i = 0; i < player.inventory.Length && remaining > 0; i++)
+                        {
+                            if (player.inventory[i].netID == kvp.Key)
+                            {
+                                int take = Math.Min(remaining, player.inventory[i].stack);
+                                player.inventory[i].stack -= take;
+                                remaining -= take;
+                                if (player.inventory[i].stack <= 0)
+                                {
+                                    player.inventory[i].TurnToAir();
+                                }
+                            }
+                        }
+                    }
+
+                    int slot = Item.NewItem(player.getRect(), resultId, resultCount);
+                    if (slot >= 0 && slot < player.inventory.Length)
+                    {
+                        player.inventory[slot] = Main.item[slot];
                     }
                 }
             }

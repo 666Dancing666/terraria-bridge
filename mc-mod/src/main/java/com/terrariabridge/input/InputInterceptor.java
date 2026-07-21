@@ -3,6 +3,9 @@ package com.terrariabridge.input;
 import com.terrariabridge.input.RaycastHandler.TerrariaHitResult;
 import com.terrariabridge.network.BridgeClient;
 import com.terrariabridge.network.MessageTypes;
+import com.terrariabridge.gui.RecipeScreen;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -12,6 +15,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InputInterceptor
@@ -22,6 +26,8 @@ public class InputInterceptor
     private boolean leftWasDown = false;
     private boolean rightWasDown = false;
     private boolean jumpWasDown = false;
+    private boolean rWasDown = false;
+    private Gson gson = new Gson();
 
     public InputInterceptor(RaycastHandler raycastHandler, BridgeClient bridgeClient)
     {
@@ -51,7 +57,6 @@ public class InputInterceptor
             payload.put("x", currentX);
             payload.put("y", currentY);
             payload.put("z", 0);
-
             bridgeClient.send(MessageTypes.toJson(MessageTypes.PLAYER_MOVE, payload));
             lastX = currentX;
             lastY = currentY;
@@ -66,6 +71,20 @@ public class InputInterceptor
             bridgeClient.send(MessageTypes.toJson(MessageTypes.PLAYER_ACTION, payload));
         }
         jumpWasDown = spaceDown;
+
+        boolean rDown = GLFW.glfwGetKey(window, GLFW.GLFW_KEY_R) == GLFW.GLFW_PRESS;
+        if (rDown && !rWasDown)
+        {
+            if (mc.screen == null)
+            {
+                bridgeClient.send("{\"type\":\"request_recipes\"}");
+            }
+            else if (mc.screen instanceof RecipeScreen)
+            {
+                mc.setScreen(null);
+            }
+        }
+        rWasDown = rDown;
 
         boolean leftDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
         boolean rightDown = GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
@@ -92,5 +111,13 @@ public class InputInterceptor
 
         leftWasDown = leftDown;
         rightWasDown = rightDown;
+    }
+
+    public static void openRecipeScreen(List<Map<String, Object>> recipes, BridgeClient client)
+    {
+        Minecraft mc = Minecraft.getInstance();
+        RecipeScreen screen = new RecipeScreen(client);
+        screen.setRecipes(recipes);
+        mc.setScreen(screen);
     }
 }

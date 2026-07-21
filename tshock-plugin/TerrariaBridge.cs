@@ -26,6 +26,7 @@ namespace TerrariaBridge
         private EntityHandler _entityHandler;
         private CommandHandler _commandHandler;
         private EventHandler _eventHandler;
+        private TileUpdateHandler _tileUpdateHandler;
 
         public TerrariaBridgePlugin(Main game) : base(game)
         {
@@ -40,6 +41,7 @@ namespace TerrariaBridge
             _entityHandler = new EntityHandler(_client);
             _commandHandler = new CommandHandler(_client);
             _eventHandler = new EventHandler(_client);
+            _tileUpdateHandler = new TileUpdateHandler(_client, _worldSync);
 
             _client.OnConnected += OnBridgeConnected;
             _client.OnDisconnected += OnBridgeDisconnected;
@@ -50,6 +52,7 @@ namespace TerrariaBridge
             ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
 
             _eventHandler.Register();
+            _tileUpdateHandler.Register();
 
             Task.Run(async () => await _client.ConnectAsync());
         }

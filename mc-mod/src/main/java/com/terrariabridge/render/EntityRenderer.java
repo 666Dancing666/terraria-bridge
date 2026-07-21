@@ -13,6 +13,8 @@ import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -175,7 +177,13 @@ public class EntityRenderer
                 {
                     ItemEntity item = new ItemEntity(EntityType.ITEM, level);
                     item.setPos(x, y, z);
+                    if (data.mcItem != null) {
+                    net.minecraft.world.item.Item mcItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(data.mcItem));
+                    if (mcItem != null) item.setItem(new ItemStack(mcItem));
+                    else item.setItem(new ItemStack(Items.DIAMOND));
+                } else {
                     item.setItem(new ItemStack(Items.DIAMOND));
+                }
                     item.setNoPickUpDelay();
                     item.setNeverPickUp();
                     return item;

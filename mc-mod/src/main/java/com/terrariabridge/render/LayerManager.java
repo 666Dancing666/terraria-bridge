@@ -42,6 +42,7 @@ public class LayerManager
         public int direction;
         public int netId;
         public String mcEntity;
+        public String mcItem;
     }
 
     public void updateTile(Map<String, Object> data)
@@ -96,6 +97,7 @@ public class LayerManager
         if (data.containsKey("max_health")) entity.maxHealth = ((Number) data.get("max_health")).intValue();
         if (data.containsKey("net_id")) entity.netId = ((Number) data.get("net_id")).intValue();
         if (data.containsKey("mc_entity")) entity.mcEntity = (String) data.get("mc_entity");
+        if (data.containsKey("mc_item")) entity.mcItem = (String) data.get("mc_item");
     }
 
     public void removeEntity(Map<String, Object> data)

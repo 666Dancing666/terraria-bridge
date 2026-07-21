@@ -7,11 +7,13 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.entity.monster.Slime;
+import net.minecraft.world.entity.monster.Blaze;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.Fireball;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.util.*;
@@ -64,6 +66,14 @@ public class EntityRenderer
                 entity.setPos(mcX, mcY, mcZ);
                 entity.setDeltaMovement(0, 0, 0);
 
+                if (data.velocityX != 0 || data.velocityY != 0)
+                {
+                    entity.setDeltaMovement(
+                        data.velocityX / 16.0,
+                        data.velocityY / 16.0,
+                        0);
+                }
+
                 if (entity instanceof ArmorStand stand)
                 {
                     stand.setCustomNameVisible(true);
@@ -107,6 +117,11 @@ public class EntityRenderer
         double y = data.y / 16.0;
         double z = 0.5;
 
+        if (entityType != null && entityType.equals("projectile"))
+        {
+            return createProjectile(level, data, x, y, z);
+        }
+
         switch (mcEntity)
         {
             case "minecraft:zombie":
@@ -133,6 +148,13 @@ public class EntityRenderer
                 slime.setNoAi(true);
                 slime.setSilent(true);
                 return slime;
+
+            case "minecraft:blaze":
+                Blaze blaze = new Blaze(EntityType.BLAZE, level);
+                blaze.setPos(x, y, z);
+                blaze.setNoAi(true);
+                blaze.setSilent(true);
+                return blaze;
 
             case "minecraft:player":
                 ArmorStand playerStand = new ArmorStand(EntityType.ARMOR_STAND, level);
@@ -171,6 +193,34 @@ public class EntityRenderer
                     stand.setCustomNameVisible(true);
                 }
                 return stand;
+        }
+    }
+
+    private Entity createProjectile(Level level, LayerManager.EntityData data, double x, double y, double z)
+    {
+        String mcProj = data.mcEntity;
+        if (mcProj == null) mcProj = "minecraft:arrow";
+
+        switch (mcProj)
+        {
+            case "minecraft:arrow":
+                Arrow arrow = new Arrow(EntityType.ARROW, level);
+                arrow.setPos(x, y, z);
+                arrow.setNoGravity(true);
+                arrow.pickup = Arrow.Pickup.DISALLOWED;
+                return arrow;
+
+            case "minecraft:fireball":
+                Fireball fireball = new net.minecraft.world.entity.projectile.SmallFireball(EntityType.SMALL_FIREBALL, level);
+                fireball.setPos(x, y, z);
+                return fireball;
+
+            default:
+                Arrow defaultArrow = new Arrow(EntityType.ARROW, level);
+                defaultArrow.setPos(x, y, z);
+                defaultArrow.setNoGravity(true);
+                defaultArrow.pickup = Arrow.Pickup.DISALLOWED;
+                return defaultArrow;
         }
     }
 }

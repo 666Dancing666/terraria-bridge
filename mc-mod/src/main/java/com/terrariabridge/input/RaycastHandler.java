@@ -8,6 +8,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class RaycastHandler
 {
@@ -21,14 +23,14 @@ public class RaycastHandler
     public static class TerrariaHitResult
     {
         public int x, y, z;
-        public String hitType; // "tile", "furniture", "wall", "entity"
-        public int entityId;
+        public String hitType;
 
-        public TerrariaHitResult(int x, int y, int z)
+        public TerrariaHitResult(int x, int y, int z, String hitType)
         {
             this.x = x;
             this.y = y;
             this.z = z;
+            this.hitType = hitType;
         }
     }
 
@@ -39,42 +41,48 @@ public class RaycastHandler
 
         Vec3 eyePos = mc.player.getEyePosition();
         Vec3 lookVec = mc.player.getLookAngle();
-        Vec3 endPos = eyePos.add(lookVec.scale(20.0));
+        double range = 20.0;
 
-        for (int z = 0; z <= 2; z++)
+        int[] layers = {
+            LayerManager.LAYER_FOREGROUND,
+            LayerManager.LAYER_FURNITURE,
+            LayerManager.LAYER_WALL
+        };
+
+        for (int z : layers)
         {
-            ClipContext context = new ClipContext(
-                eyePos, endPos,
-                ClipContext.Block.OUTLINE,
-                ClipContext.Fluid.NONE,
-                mc.player
-            );
+            double dz = z + 0.5 - eyePos.z;
+            if (Math.abs(lookVec.z) < 0.0001) continue;
 
-            BlockHitResult hit = mc.level.clip(context);
+            double t = dz / lookVec.z;
+            if (t < 0 || t > range) continue;
 
-            if (hit.getType() == HitResult.Type.BLOCK)
+            double hitX = eyePos.x + lookVec.x * t;
+            double hitY = eyePos.y + lookVec.y * t;
+
+            int bx = (int) Math.floor(hitX);
+            int by = (int) Math.floor(hitY);
+
+            BlockState state = mc.level.getBlockState(new BlockPos(bx, by, z));
+            if (state.getBlock() != Blocks.AIR)
             {
-                BlockPos pos = hit.getBlockPos();
-                if (pos.getZ() == z)
+                String hitType;
+                switch (z)
                 {
-                    TerrariaHitResult result = new TerrariaHitResult(
-                        pos.getX(), pos.getY(), pos.getZ());
-
-                    switch (z)
-                    {
-                        case LayerManager.LAYER_FOREGROUND:
-                            result.hitType = "tile";
-                            break;
-                        case LayerManager.LAYER_FURNITURE:
-                            result.hitType = "furniture";
-                            break;
-                        case LayerManager.LAYER_WALL:
-                            result.hitType = "wall";
-                            break;
-                    }
-
-                    return result;
+                    case LayerManager.LAYER_FOREGROUND:
+                        hitType = "tile";
+                        break;
+                    case LayerManager.LAYER_FURNITURE:
+                        hitType = "furniture";
+                        break;
+                    case LayerManager.LAYER_WALL:
+                        hitType = "wall";
+                        break;
+                    default:
+                        hitType = "unknown";
                 }
+
+                return new TerrariaHitResult(bx, by, z, hitType);
             }
         }
 

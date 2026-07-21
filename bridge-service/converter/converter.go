@@ -163,3 +163,55 @@ Type:    original.Type,
 Payload: converted,
 }
 }
+
+func ConvertChatTRToMC(original protocol.Message) protocol.Message {
+payload := original.Payload
+playerName, _ := payload["player_name"].(string)
+msg, _ := payload["msg"].(string)
+world, _ := payload["world"].(string)
+
+mcMsg := ""
+if world != "" {
+mcMsg = "[TR/" + world + "] "
+}
+if playerName != "" {
+mcMsg += "<" + playerName + "> "
+}
+mcMsg += msg
+
+return protocol.Message{
+Type: "chat_message",
+Payload: map[string]interface{}{
+"msg":         mcMsg,
+"source":      "terraria",
+"player_name": playerName,
+"raw":         msg,
+},
+}
+}
+
+func ConvertChatMCToTR(original protocol.Message) protocol.Message {
+payload := original.Payload
+playerID, _ := payload["_player_id"].(string)
+msg, _ := payload["msg"].(string)
+
+trMsg := "[MC] "
+if playerID != "" {
+short := playerID
+if len(short) > 8 {
+short = short[:8]
+}
+trMsg += "<" + short + "> "
+}
+trMsg += msg
+
+return protocol.Message{
+Type: "chat_message",
+Payload: map[string]interface{}{
+"msg":    trMsg,
+"source": "minecraft",
+"player": playerID,
+"raw":    msg,
+},
+}
+}

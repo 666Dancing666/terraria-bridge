@@ -21,10 +21,7 @@ ps := session.Manager.AddPlayer(playerID, conn)
 defer session.Manager.RemovePlayer(playerID)
 
 for _, msg := range ps.MCBuffer.PopAll() {
-if err := conn.WriteJSON(msg); err != nil {
-ps.MCBuffer.Push(msg)
-break
-}
+conn.WriteJSON(msg)
 }
 
 for {
@@ -43,7 +40,12 @@ continue
 msg.Payload["_player_id"] = playerID
 logger.Default.Log("MC->TSHOCK", msg.Type, msg.Payload)
 
-toSend := converter.ConvertMCToTR(msg)
+var toSend protocol.Message
+if msg.Type == "chat_message" {
+toSend = converter.ConvertChatMCToTR(msg)
+} else {
+toSend = converter.ConvertMCToTR(msg)
+}
 
 tsConn := session.Manager.GetTShock()
 if tsConn != nil {

@@ -16,10 +16,7 @@ log.Println("TShock connected")
 session.Manager.SetTShock(conn)
 
 for _, msg := range session.Manager.TSBuffer.PopAll() {
-if err := conn.WriteJSON(msg); err != nil {
-session.Manager.TSBuffer.Push(msg)
-break
-}
+conn.WriteJSON(msg)
 }
 
 for {
@@ -48,6 +45,8 @@ case "tile_update", "wall_update", "liquid_update":
 toSend = converter.ConvertTileUpdate(msg)
 case "player_move":
 toSend = converter.ConvertPlayerMove(msg)
+case "chat_message":
+toSend = converter.ConvertChatTRToMC(msg)
 default:
 toSend = msg
 }

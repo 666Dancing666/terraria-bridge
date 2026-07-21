@@ -2,6 +2,7 @@ package server
 
 import (
 "encoding/json"
+"fmt"
 "log"
 "net/http"
 "terraria-bridge/config"
@@ -40,7 +41,7 @@ status := map[string]interface{}{
 "mc_players":    len(players),
 "blocked_msgs":  stats,
 "players":       playerList,
-"uptime":        time.Since(startTime).String(),
+"uptime":        fmt.Sprintf("%ds", int(time.Since(startTime).Seconds())),
 "latency":       latency,
 }
 

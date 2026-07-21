@@ -44,7 +44,6 @@ public class TerrariaBridgeMod
         packetHandler = new PacketHandler();
         bridgeClient = new BridgeClient(ModConfig.bridgeHost, ModConfig.bridgePort);
         bridgeClient.setOnMessageReceived(packetHandler::handleMessage);
-        bridgeClient.connect();
     }
 
     public void onClientSetup(FMLClientSetupEvent event)
@@ -58,5 +57,7 @@ public class TerrariaBridgeMod
 
         MinecraftForge.EVENT_BUS.register(inputInterceptor);
         MinecraftForge.EVENT_BUS.register(worldRenderer);
+
+        bridgeClient.connect();
     }
 }

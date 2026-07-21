@@ -52,6 +52,7 @@ public class TerrariaBridgeMod
     {
         layerManager = new LayerManager();
         packetHandler.setLayerManager(layerManager);
+        packetHandler.setWorldRenderer(worldRenderer);
         worldRenderer = new WorldRenderer(layerManager);
         entityRenderer = new EntityRenderer(layerManager);
         raycastHandler = new RaycastHandler(layerManager);

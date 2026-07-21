@@ -81,6 +81,5 @@ handleMC(conn)
 log.Printf("Dashboard: http://0.0.0.0%s", cfg.Port)
 log.Printf("TShock:    ws://0.0.0.0%s/tshock", cfg.Port)
 log.Printf("MC:        ws://0.0.0.0%s/mc", cfg.Port)
-log.Printf("Health:    http://0.0.0.0%s/health", cfg.Port)
 log.Fatal(http.ListenAndServe(cfg.Port, nil))
 }

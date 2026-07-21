@@ -20,11 +20,12 @@ mapping.InitTiles()
 mapping.InitItems()
 mapping.InitEntities()
 mapping.InitSounds()
+mapping.InitRecipes()
 
-log.Printf("Mappings: %d tiles, %d items, %d walls, %d entities, %d sounds",
+log.Printf("Mappings: %d tiles, %d items, %d walls, %d entities, %d sounds, %d recipes",
 len(mapping.Tiles), len(mapping.Items),
 len(mapping.Walls), len(mapping.Entities),
-len(mapping.Sounds))
+len(mapping.Sounds), len(mapping.Recipes))
 log.Println("Log path:", cfg.LogPath)
 server.Start(cfg)
 }

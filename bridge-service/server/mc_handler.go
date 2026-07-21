@@ -5,6 +5,7 @@ import (
 "terraria-bridge/converter"
 "terraria-bridge/filter"
 "terraria-bridge/logger"
+"terraria-bridge/mapping"
 "terraria-bridge/metrics"
 "terraria-bridge/protocol"
 "terraria-bridge/session"
@@ -34,6 +35,76 @@ break
 }
 
 metrics.Stats.RecordOut()
+
+switch msg.Type {
+case "request_recipes":
+recipes := make([]map[string]interface{}, 0)
+for key, recipe := range mapping.Recipes {
+ingredients := make([]map[string]interface{}, 0)
+for id, count := range recipe.Ingredients {
+item := mapping.Items[id]
+ingredients = append(ingredients, map[string]interface{}{
+"item_id":  id,
+"item_name": item.TRName,
+"mc_name":  item.MCName,
+"count":    count,
+})
+}
+resultItem := mapping.Items[recipe.ResultItem]
+recipes = append(recipes, map[string]interface{}{
+"key":         key,
+"result_id":   recipe.ResultItem,
+"result_name": resultItem.TRName,
+"result_mc":   resultItem.MCName,
+"result_count": recipe.ResultCount,
+"station":     recipe.Station,
+"ingredients": ingredients,
+})
+}
+conn.WriteJSON(protocol.Message{
+Type: "recipe_list",
+Payload: map[string]interface{}{
+"recipes": recipes,
+},
+})
+continue
+
+case "craft_item":
+recipeKey, _ := msg.Payload["recipe"].(string)
+recipe := mapping.CheckRecipe(recipeKey)
+if recipe != nil {
+craftMsg := protocol.Message{
+Type: "craft_request",
+Payload: map[string]interface{}{
+"player_id":   playerID,
+"result_id":   recipe.ResultItem,
+"result_count": recipe.ResultCount,
+"station":     recipe.Station,
+"ingredients": recipe.Ingredients,
+},
+}
+tsConn := session.Manager.GetTShock()
+if tsConn != nil {
+tsConn.WriteJSON(craftMsg)
+}
+conn.WriteJSON(protocol.Message{
+Type: "craft_result",
+Payload: map[string]interface{}{
+"success": true,
+"recipe":  recipeKey,
+},
+})
+} else {
+conn.WriteJSON(protocol.Message{
+Type: "craft_result",
+Payload: map[string]interface{}{
+"success": false,
+"error":   "recipe not found",
+},
+})
+}
+continue
+}
 
 if !filter.Default.PassOut(msg.Type) {
 filter.Default.RecordBlocked(msg.Type)

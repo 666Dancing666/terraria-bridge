@@ -45,6 +45,8 @@ case "tile_update", "wall_update", "liquid_update":
 toSend = converter.ConvertTileUpdate(msg)
 case "player_move":
 toSend = converter.ConvertPlayerMove(msg)
+case "game_event":
+toSend = converter.ConvertEvent(msg)
 case "chat_message":
 toSend = converter.ConvertChatTRToMC(msg)
 default:

@@ -215,3 +215,76 @@ Payload: map[string]interface{}{
 },
 }
 }
+
+func ConvertEvent(original protocol.Message) protocol.Message {
+payload := original.Payload
+eventType, _ := payload["event_type"].(string)
+eventName, _ := payload["event_name"].(string)
+
+title := ""
+subtitle := ""
+color := "white"
+
+switch eventType {
+case "boss_spawn":
+title = "Boss 已生成!"
+subtitle = eventName
+color = "red"
+case "boss_death":
+title = "Boss 已被击败!"
+subtitle = eventName
+color = "gold"
+case "invasion_start":
+title = "入侵事件!"
+subtitle = eventName
+color = "red"
+case "invasion_end":
+title = "入侵已结束"
+subtitle = eventName
+color = "green"
+case "npc_arrive":
+title = "NPC 已到达"
+subtitle = eventName
+color = "yellow"
+case "player_death":
+playerName, _ := payload["player_name"].(string)
+title = "玩家死亡"
+subtitle = playerName
+color = "dark_red"
+case "blood_moon_start":
+title = "血月升起..."
+subtitle = ""
+color = "red"
+case "blood_moon_end":
+title = "血月结束了"
+subtitle = ""
+color = "green"
+case "eclipse_start":
+title = "日食开始!"
+subtitle = ""
+color = "dark_purple"
+case "eclipse_end":
+title = "日食结束了"
+subtitle = ""
+color = "green"
+case "boss_approach":
+title = "有什么东西正在接近..."
+subtitle = eventName
+color = "red"
+default:
+title = eventName
+subtitle = ""
+color = "white"
+}
+
+return protocol.Message{
+Type: "game_event",
+Payload: map[string]interface{}{
+"title":    title,
+"subtitle": subtitle,
+"color":    color,
+"event_type": eventType,
+"event_name": eventName,
+},
+}
+}

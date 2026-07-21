@@ -5,6 +5,7 @@ import (
 "terraria-bridge/converter"
 "terraria-bridge/filter"
 "terraria-bridge/logger"
+"terraria-bridge/metrics"
 "terraria-bridge/protocol"
 "terraria-bridge/session"
 "fmt"
@@ -31,6 +32,8 @@ if err != nil {
 log.Printf("MC disconnected: %s - %v", playerID, err)
 break
 }
+
+metrics.Stats.RecordOut()
 
 if !filter.Default.PassOut(msg.Type) {
 filter.Default.RecordBlocked(msg.Type)

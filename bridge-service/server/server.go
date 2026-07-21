@@ -6,6 +6,7 @@ import (
 "net/http"
 "terraria-bridge/config"
 "terraria-bridge/filter"
+"terraria-bridge/metrics"
 "terraria-bridge/session"
 "time"
 
@@ -24,12 +25,12 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 tsOnline := session.Manager.GetTShock() != nil
 players := session.Manager.GetAllPlayers()
 stats := filter.Default.Stats()
+latency := metrics.Stats.Snapshot()
 
 playerList := make([]map[string]interface{}, 0)
 for _, ps := range players {
 playerList = append(playerList, map[string]interface{}{
-"id":   ps.ID,
-"msgs": 0,
+"id": ps.ID,
 })
 }
 
@@ -40,6 +41,7 @@ status := map[string]interface{}{
 "blocked_msgs":  stats,
 "players":       playerList,
 "uptime":        time.Since(startTime).String(),
+"latency":       latency,
 }
 
 w.Header().Set("Content-Type", "application/json")

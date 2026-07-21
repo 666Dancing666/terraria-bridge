@@ -5,6 +5,7 @@ import (
 "terraria-bridge/converter"
 "terraria-bridge/filter"
 "terraria-bridge/logger"
+"terraria-bridge/metrics"
 "terraria-bridge/protocol"
 "terraria-bridge/session"
 
@@ -27,6 +28,8 @@ log.Printf("TShock disconnected: %v", err)
 session.Manager.SetTShock(nil)
 break
 }
+
+metrics.Stats.RecordIn()
 
 if !filter.Default.PassIn(msg.Type) {
 filter.Default.RecordBlocked(msg.Type)

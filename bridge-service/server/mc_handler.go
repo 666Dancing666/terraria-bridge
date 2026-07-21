@@ -1,37 +1,57 @@
 package server
 
 import (
-    "log"
-    "terraria-bridge/protocol"
-    "terraria-bridge/session"
+"log"
+"terraria-bridge/converter"
+"terraria-bridge/filter"
+"terraria-bridge/logger"
+"terraria-bridge/protocol"
+"terraria-bridge/session"
+"fmt"
+"time"
 
-    "github.com/gorilla/websocket"
+"github.com/gorilla/websocket"
 )
 
 func handleMC(conn *websocket.Conn) {
-    log.Println("✅ MC 客户端已连接")
-    session.Get().SetMC(conn)
+playerID := fmt.Sprintf("MC-%d", time.Now().UnixNano())
+log.Printf("MC client connected: %s", playerID)
 
-    for {
-        var msg protocol.Message
-        err := conn.ReadJSON(&msg)
-        if err != nil {
-            log.Printf("❌ MC 连接断开: %v", err)
-            session.Get().SetMC(nil)
-            break
-        }
-        log.Printf("📤 [MC → TShock] 转发消息: %s", msg.Type)
+ps := session.Manager.AddPlayer(playerID, conn)
+defer session.Manager.RemovePlayer(playerID)
 
-        s := session.Get()
-        if tsConn, ok := s.TShockConn.(*websocket.Conn); ok && tsConn != nil {
-            err := tsConn.WriteJSON(msg)
-            if err != nil {
-                log.Printf("❌ 转发给 TShock 失败: %v", err)
-            } else {
-                log.Printf("   ✅ 已转发")
-            }
-        } else {
-            log.Printf("   ⚠️ TShock 未连接，消息丢弃")
-        }
-    }
+for _, msg := range ps.MCBuffer.PopAll() {
+if err := conn.WriteJSON(msg); err != nil {
+ps.MCBuffer.Push(msg)
+break
+}
+}
+
+for {
+var msg protocol.Message
+err := conn.ReadJSON(&msg)
+if err != nil {
+log.Printf("MC disconnected: %s - %v", playerID, err)
+break
+}
+
+if !filter.Default.PassOut(msg.Type) {
+filter.Default.RecordBlocked(msg.Type)
+continue
+}
+
+msg.Payload["_player_id"] = playerID
+logger.Default.Log("MC->TSHOCK", msg.Type, msg.Payload)
+
+toSend := converter.ConvertMCToTR(msg)
+
+tsConn := session.Manager.GetTShock()
+if tsConn != nil {
+if err := tsConn.WriteJSON(toSend); err != nil {
+session.Manager.TSBuffer.Push(toSend)
+}
+} else {
+session.Manager.TSBuffer.Push(toSend)
+}
+}
 }

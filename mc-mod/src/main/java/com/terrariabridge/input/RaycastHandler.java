@@ -2,14 +2,14 @@ package com.terrariabridge.input;
 
 import com.terrariabridge.render.LayerManager;
 import net.minecraft.client.Minecraft;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import java.util.List;
 
 public class RaycastHandler
 {
@@ -24,6 +24,7 @@ public class RaycastHandler
     {
         public int x, y, z;
         public String hitType;
+        public int entityId;
 
         public TerrariaHitResult(int x, int y, int z, String hitType)
         {
@@ -31,6 +32,13 @@ public class RaycastHandler
             this.y = y;
             this.z = z;
             this.hitType = hitType;
+            this.entityId = -1;
+        }
+
+        public TerrariaHitResult(int entityId)
+        {
+            this.entityId = entityId;
+            this.hitType = "entity";
         }
     }
 
@@ -39,6 +47,7 @@ public class RaycastHandler
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return null;
 
+        Level level = mc.level;
         Vec3 eyePos = mc.player.getEyePosition();
         Vec3 lookVec = mc.player.getLookAngle();
         double range = 20.0;
@@ -63,7 +72,7 @@ public class RaycastHandler
             int bx = (int) Math.floor(hitX);
             int by = (int) Math.floor(hitY);
 
-            BlockState state = mc.level.getBlockState(new BlockPos(bx, by, z));
+            BlockState state = level.getBlockState(new BlockPos(bx, by, z));
             if (state.getBlock() != Blocks.AIR)
             {
                 String hitType;
@@ -83,6 +92,27 @@ public class RaycastHandler
                 }
 
                 return new TerrariaHitResult(bx, by, z, hitType);
+            }
+        }
+
+        for (double d = 0.5; d <= range; d += 0.5)
+        {
+            Vec3 point = eyePos.add(lookVec.scale(d));
+            AABB box = new AABB(point.x - 0.3, point.y - 0.3, -1, point.x + 0.3, point.y + 0.3, 2);
+            List<Entity> entities = level.getEntitiesOfClass(Entity.class, box, e -> e != mc.player);
+
+            for (Entity entity : entities)
+            {
+                for (LayerManager.EntityData data : layerManager.getAllEntities())
+                {
+                    double ex = data.x / 16.0;
+                    double ey = data.y / 16.0;
+
+                    if (Math.abs(ex - entity.getX()) < 0.5 && Math.abs(ey - entity.getY()) < 0.5)
+                    {
+                        return new TerrariaHitResult(data.id);
+                    }
+                }
             }
         }
 

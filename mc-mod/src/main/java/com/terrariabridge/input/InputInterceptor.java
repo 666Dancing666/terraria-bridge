@@ -94,19 +94,37 @@ public class InputInterceptor
         if (leftDown && !leftWasDown && hit != null)
         {
             Map<String, Object> payload = new HashMap<>();
-            payload.put("x", hit.x);
-            payload.put("y", hit.y);
             payload.put("player_id", player.getId());
-            bridgeClient.send(MessageTypes.toJson(MessageTypes.TILE_BREAK, payload));
+
+            if (hit.hitType.equals("entity"))
+            {
+                payload.put("target_entity", hit.entityId);
+                bridgeClient.send(MessageTypes.toJson("entity_attack", payload));
+            }
+            else
+            {
+                payload.put("x", hit.x);
+                payload.put("y", hit.y);
+                bridgeClient.send(MessageTypes.toJson(MessageTypes.TILE_BREAK, payload));
+            }
         }
 
         if (rightDown && !rightWasDown && hit != null)
         {
             Map<String, Object> payload = new HashMap<>();
-            payload.put("x", hit.x);
-            payload.put("y", hit.y);
             payload.put("player_id", player.getId());
-            bridgeClient.send(MessageTypes.toJson(MessageTypes.INTERACT, payload));
+
+            if (hit.hitType.equals("entity"))
+            {
+                payload.put("target_entity", hit.entityId);
+                bridgeClient.send(MessageTypes.toJson("entity_interact", payload));
+            }
+            else
+            {
+                payload.put("x", hit.x);
+                payload.put("y", hit.y);
+                bridgeClient.send(MessageTypes.toJson(MessageTypes.INTERACT, payload));
+            }
         }
 
         leftWasDown = leftDown;

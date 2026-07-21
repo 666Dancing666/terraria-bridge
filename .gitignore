@@ -1,0 +1,16 @@
+# Gradle
+mc-mod/.gradle/
+mc-mod/build/
+mc-mod/gradle/
+mc-mod/gradlew*
+
+# Go
+bridge-service/bridge-service
+
+# .NET
+tshock-plugin/bin/
+tshock-plugin/obj/
+
+# 临时文件
+*.log
+*.tmp

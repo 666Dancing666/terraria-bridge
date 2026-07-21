@@ -1,0 +1,10 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="terrariabridge"
+version="0.1.0"
+displayName="Terraria Bridge"
+description="在MC中以薄片形式渲染并操作泰拉瑞亚世界"
+authors=["TerrariaBridge Team"]

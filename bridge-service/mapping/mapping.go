@@ -65,5 +65,5 @@ func TREntityToMC(trID int) string {
 if entry, ok := Entities[trID]; ok {
 return entry.MCName
 }
-return "minecraft:zombie"
+return "terrariabridge:unknown_entity"
 }

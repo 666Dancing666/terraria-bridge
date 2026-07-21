@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "layer=0": { "model": "terrariabridge:block/thin_block_layer0" },
+    "layer=1": { "model": "terrariabridge:block/thin_block_layer1" },
+    "layer=2": { "model": "terrariabridge:block/thin_block_layer2" }
+  }
+}

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+GRADLE_VERSION=8.5
+GRADLE_DIR="$HOME/.gradle/wrapper/dists/gradle-${GRADLE_VERSION}-bin"
+GRADLE_ZIP="${GRADLE_DIR}/gradle-${GRADLE_VERSION}-bin.zip"
+GRADLE_EXTRACTED="${GRADLE_DIR}/gradle-${GRADLE_VERSION}"
+
+if [ ! -f "${GRADLE_EXTRACTED}/bin/gradle" ]; then
+    mkdir -p "${GRADLE_DIR}"
+    if [ ! -f "${GRADLE_ZIP}" ]; then
+        echo "Downloading Gradle ${GRADLE_VERSION}..."
+        curl -L -o "${GRADLE_ZIP}" "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"
+    fi
+    unzip -q "${GRADLE_ZIP}" -d "${GRADLE_DIR}"
+fi
+
+exec "${GRADLE_EXTRACTED}/bin/gradle" "$@"

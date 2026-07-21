@@ -5,6 +5,7 @@ import com.terrariabridge.network.BridgeClient;
 import com.terrariabridge.network.PacketHandler;
 import com.terrariabridge.render.WorldRenderer;
 import com.terrariabridge.render.LayerManager;
+import com.terrariabridge.render.EntityRenderer;
 import com.terrariabridge.input.InputInterceptor;
 import com.terrariabridge.input.RaycastHandler;
 import com.terrariabridge.collision.CollisionDisabler;
@@ -24,6 +25,7 @@ public class TerrariaBridgeMod
     private PacketHandler packetHandler;
     private WorldRenderer worldRenderer;
     private LayerManager layerManager;
+    private EntityRenderer entityRenderer;
     private InputInterceptor inputInterceptor;
     private RaycastHandler raycastHandler;
 
@@ -51,12 +53,14 @@ public class TerrariaBridgeMod
         layerManager = new LayerManager();
         packetHandler.setLayerManager(layerManager);
         worldRenderer = new WorldRenderer(layerManager);
+        entityRenderer = new EntityRenderer(layerManager);
         raycastHandler = new RaycastHandler(layerManager);
         inputInterceptor = new InputInterceptor(raycastHandler, bridgeClient);
         CollisionDisabler.register();
 
         MinecraftForge.EVENT_BUS.register(inputInterceptor);
         MinecraftForge.EVENT_BUS.register(worldRenderer);
+        MinecraftForge.EVENT_BUS.register(entityRenderer);
 
         bridgeClient.connect();
     }

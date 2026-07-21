@@ -288,3 +288,39 @@ Payload: map[string]interface{}{
 },
 }
 }
+
+func ConvertTimeSync(original protocol.Message) protocol.Message {
+payload := original.Payload
+trTime, _ := payload["time"].(float64)
+isDay, _ := payload["is_day"].(bool)
+dayTime, _ := payload["day_time"].(bool)
+
+mcTime := int64(0)
+if dayTime {
+mcTime = int64((trTime / 54000.0) * 12000)
+if mcTime < 0 {
+mcTime = 0
+}
+if mcTime > 12000 {
+mcTime = 12000
+}
+} else {
+mcTime = 13000 + int64(((trTime-54000)/27000.0)*11000)
+if mcTime < 13000 {
+mcTime = 13000
+}
+if mcTime > 24000 {
+mcTime = 24000
+}
+}
+
+return protocol.Message{
+Type: "time_sync",
+Payload: map[string]interface{}{
+"mc_time":  mcTime,
+"tr_time":  trTime,
+"is_day":   isDay,
+"day_time": dayTime,
+},
+}
+}

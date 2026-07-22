@@ -18,13 +18,10 @@
       <HintPath>..\TShock\bin\OTAPI.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="TerrariaServer">
-    <Reference Include="ModFramework">
-      <HintPath>..\TShock\bin\ModFramework.dll</HintPath>
-    </Reference>
       <HintPath>..\TShock\bin\TerrariaServer.dll</HintPath>
+    </Reference>
     <Reference Include="ModFramework">
       <HintPath>..\TShock\bin\ModFramework.dll</HintPath>
-    </Reference>
     </Reference>
   </ItemGroup>
   <ItemGroup>

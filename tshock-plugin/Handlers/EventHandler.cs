@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
 using Terraria;
-using TerrariaApi.Server;
-using TShockAPI;
-using TerrariaBridge.Network;
 
 namespace TerrariaBridge.Handlers
 {
     public class EventHandler
     {
         private BridgeClient _client;
+        private int lastDayTime = -1;
+        private bool lastBloodMoon = false;
+        private bool lastEclipse = false;
+        private string lastWeather = "";
+        private int weatherTimer = 0;
 
         public EventHandler(BridgeClient client)
         {
@@ -18,47 +20,9 @@ namespace TerrariaBridge.Handlers
 
         public void Register()
         {
-            ServerApi.Hooks.NpcSpawn.Register(TerrariaBridgePlugin.Instance, OnNpcSpawn);
-            ServerApi.Hooks.NpcKilled.Register(TerrariaBridgePlugin.Instance, OnNpcKilled);
-            ServerApi.Hooks.PlayerDeath.Register(TerrariaBridgePlugin.Instance, OnPlayerDeath);
-            ServerApi.Hooks.GameUpdate.Register(TerrariaBridgePlugin.Instance, OnGameUpdate);
         }
 
-        private int lastDayTime = -1;
-        private bool lastBloodMoon = false;
-        private bool lastEclipse = false;
-        private string lastWeather = "";
-        private int weatherTimer = 0;
-
-        private void OnNpcSpawn(NpcSpawnEventArgs args)
-        {
-            int npcIndex = args.NpcId;
-            if (npcIndex < 0 || npcIndex >= Main.npc.Length) return;
-
-            NPC npc = Main.npc[npcIndex];
-            if (npc == null || !npc.active) return;
-
-            if (npc.boss)
-            {
-                SendEvent("boss_spawn", npc.FullName);
-            }
-        }
-
-        private void OnNpcKilled(NpcKilledEventArgs args)
-        {
-            int npcIndex = args.npcId;
-            if (npcIndex < 0 || npcIndex >= Main.npc.Length) return;
-
-            NPC npc = Main.npc[npcIndex];
-            if (npc == null) return;
-
-            if (npc.boss)
-            {
-                SendEvent("boss_death", npc.FullName);
-            }
-        }
-
-        private void OnGameUpdate(GameUpdateEventArgs args)
+        public void OnUpdate()
         {
             if (!_client.IsConnected) return;
 
@@ -95,10 +59,6 @@ namespace TerrariaBridge.Handlers
                 {
                     weather = Main.maxRaining > 0.6f ? "heavy_rain" : "rain";
                 }
-                if (Main.sandTiles > 100)
-                {
-                    weather = "sandstorm";
-                }
                 if (Main.windSpeedCurrent > 0.5f)
                 {
                     wind = "strong";
@@ -133,15 +93,6 @@ namespace TerrariaBridge.Handlers
             {
                 lastEclipse = Main.eclipse;
                 SendEvent(lastEclipse ? "eclipse_start" : "eclipse_end", "");
-            }
-        }
-
-        private void OnPlayerDeath(PlayerDeathEventArgs args)
-        {
-            var player = TShock.Players[args.PlayerId];
-            if (player != null)
-            {
-                SendEvent("player_death", player.Name);
             }
         }
 

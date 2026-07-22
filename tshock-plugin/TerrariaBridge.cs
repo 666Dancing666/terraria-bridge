@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Terraria;
 using TerrariaApi.Server;
@@ -26,7 +25,6 @@ namespace TerrariaBridge
         private EntityHandler _entityHandler;
         private CommandHandler _commandHandler;
         private EventHandler _eventHandler;
-        private TileUpdateHandler _tileUpdateHandler;
 
         public TerrariaBridgePlugin(Main game) : base(game)
         {
@@ -41,18 +39,14 @@ namespace TerrariaBridge
             _entityHandler = new EntityHandler(_client);
             _commandHandler = new CommandHandler(_client);
             _eventHandler = new EventHandler(_client);
-            _tileUpdateHandler = new TileUpdateHandler(_client, _worldSync);
 
             _client.OnConnected += OnBridgeConnected;
             _client.OnDisconnected += OnBridgeDisconnected;
             _client.OnMessageReceived += OnMessageReceived;
 
-            ServerApi.Hooks.NetGreetPlayer.Register(this, OnPlayerJoin);
-            ServerApi.Hooks.ServerLeave.Register(this, OnPlayerLeave);
             ServerApi.Hooks.GameUpdate.Register(this, OnGameUpdate);
 
             _eventHandler.Register();
-            _tileUpdateHandler.Register();
 
             Task.Run(async () => await _client.ConnectAsync());
         }
@@ -61,10 +55,7 @@ namespace TerrariaBridge
         {
             if (disposing)
             {
-                ServerApi.Hooks.NetGreetPlayer.Deregister(this, OnPlayerJoin);
-                ServerApi.Hooks.ServerLeave.Deregister(this, OnPlayerLeave);
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
-
                 Task.Run(async () => await _client.DisconnectAsync());
             }
             base.Dispose(disposing);
@@ -90,37 +81,10 @@ namespace TerrariaBridge
             _commandHandler.HandleMessage(msg);
         }
 
-        private void OnPlayerJoin(NetGreetPlayerEventArgs args)
-        {
-            var player = TShock.Players[args.Who];
-            if (player == null) return;
-
-            Task.Run(async () =>
-            {
-                var joinMsg = _entityHandler.CreatePlayerJoin(player.TPlayer);
-                await _client.SendAsync(joinMsg);
-
-                var snapshot = _worldSync.CreateFullSnapshot(
-                    (int)(player.TPlayer.position.X / 16),
-                    (int)(player.TPlayer.position.Y / 16),
-                    _config.SyncRadiusX,
-                    _config.SyncRadiusY);
-                await _client.SendAsync(snapshot);
-            });
-        }
-
-        private void OnPlayerLeave(ServerLeaveEventArgs args)
-        {
-            Task.Run(async () =>
-            {
-                var leaveMsg = _entityHandler.CreatePlayerLeave(args.Who);
-                await _client.SendAsync(leaveMsg);
-            });
-        }
-
-        private void OnGameUpdate(GameUpdateEventArgs args)
+        private void OnGameUpdate(EventArgs args)
         {
             if (!_client.IsConnected) return;
+            _eventHandler.OnUpdate();
         }
     }
 }

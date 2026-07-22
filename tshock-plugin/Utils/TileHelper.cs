@@ -7,7 +7,7 @@ namespace TerrariaBridge.Utils
         public static void BreakTile(int x, int y, int playerId)
         {
             if (!WorldGen.InWorld(x, y)) return;
-            var tile = Main.tile[x, y];
+            Tile tile = Main.tile[x, y];
             if (tile == null) return;
 
             WorldGen.KillTile(x, y, false, false, false);
@@ -40,9 +40,9 @@ namespace TerrariaBridge.Utils
         public static bool IsTileBlocked(int x, int y)
         {
             if (!WorldGen.InWorld(x, y)) return true;
-            var tile = Main.tile[x, y];
+            Tile tile = Main.tile[x, y];
             if (tile == null) return true;
-            if (tile.HasTile && Main.tileSolid[tile.TileType]) return true;
+            if (tile.active() && Main.tileSolid[tile.type]) return true;
             return false;
         }
     }

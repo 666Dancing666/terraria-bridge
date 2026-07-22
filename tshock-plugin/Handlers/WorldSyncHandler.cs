@@ -26,7 +26,7 @@ namespace TerrariaBridge.Handlers
             {
                 for (int y = startY; y <= endY; y++)
                 {
-                    var tile = Main.tile[x, y];
+                    Tile tile = Main.tile[x, y];
                     if (tile == null) continue;
 
                     var tileData = new Dictionary<string, object>
@@ -35,21 +35,21 @@ namespace TerrariaBridge.Handlers
                         { "y", y }
                     };
 
-                    if (tile.HasTile)
+                    if (tile.active())
                     {
-                        tileData["tile_type"] = (int)tile.TileType;
+                        tileData["tile_type"] = (int)tile.type;
                         tileData["has_tile"] = true;
                     }
 
-                    if (tile.WallType > 0)
+                    if (tile.wall > 0)
                     {
-                        tileData["wall_type"] = (int)tile.WallType;
+                        tileData["wall_type"] = (int)tile.wall;
                     }
 
-                    if (tile.LiquidAmount > 0)
+                    if (tile.liquid > 0)
                     {
-                        tileData["liquid_type"] = (int)tile.LiquidType;
-                        tileData["liquid_amount"] = (int)tile.LiquidAmount;
+                        tileData["liquid_type"] = (int)tile.liquidType();
+                        tileData["liquid_amount"] = (int)tile.liquid;
                     }
 
                     if (tileData.Count > 2)
@@ -77,7 +77,7 @@ namespace TerrariaBridge.Handlers
 
         public BridgeMessage CreateTileUpdate(int x, int y)
         {
-            var tile = Main.tile[x, y];
+            Tile tile = Main.tile[x, y];
             if (tile == null) return null;
 
             return new BridgeMessage
@@ -87,15 +87,15 @@ namespace TerrariaBridge.Handlers
                 {
                     { "x", x },
                     { "y", y },
-                    { "tile_type", (int)tile.TileType },
-                    { "has_tile", tile.HasTile }
+                    { "tile_type", (int)tile.type },
+                    { "has_tile", tile.active() }
                 }
             };
         }
 
         public BridgeMessage CreateWallUpdate(int x, int y)
         {
-            var tile = Main.tile[x, y];
+            Tile tile = Main.tile[x, y];
             if (tile == null) return null;
 
             return new BridgeMessage
@@ -105,7 +105,7 @@ namespace TerrariaBridge.Handlers
                 {
                     { "x", x },
                     { "y", y },
-                    { "wall_type", (int)tile.WallType }
+                    { "wall_type", (int)tile.wall }
                 }
             };
         }

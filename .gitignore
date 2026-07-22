@@ -1,16 +1,23 @@
-# Gradle
-mc-mod/.gradle/
-mc-mod/build/
-mc-mod/gradle/
-mc-mod/gradlew*
-
-# Go
 bridge-service/bridge-service
-
-# .NET
 tshock-plugin/bin/
 tshock-plugin/obj/
-
-# 临时文件
+mc-mod/build/
+mc-mod/.gradle/
+mc-mod/gradle/
+mc-mod/gradlew
+mc-mod/gradlew.bat
+release/bridge-service
 *.log
+logs/
 *.tmp
+*.zip
+*.tar.gz
+*.tar.xz
+tshock-lib/
+packages/
+dotnet*/
+wine*/
+box86*/
+node_modules/
+.DS_Store
+Thumbs.db

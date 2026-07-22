@@ -37,7 +37,7 @@ conn.SetDeadline(time.Now().Add(30 * time.Second))
 
 reader := bufio.NewReader(conn)
 
-packetLen, _ := readVarInt(reader)
+_ , _ = readVarInt(reader)
 packetID, _ := readVarInt(reader)
 
 if packetID != 0x00 {
@@ -98,7 +98,7 @@ out.Write(buf.Bytes())
 conn.Write(out.Bytes())
 
 readVarInt(reader)
-pingID, _ := readVarInt(reader)
+_ , _ = readVarInt(reader)
 payload := make([]byte, 8)
 io.ReadFull(reader, payload)
 

@@ -24,7 +24,7 @@ namespace TerrariaBridge
         private WorldSyncHandler _worldSync;
         private EntityHandler _entityHandler;
         private CommandHandler _commandHandler;
-        private EventHandler _eventHandler;
+        private BridgeEventHandler _eventHandler;
 
         public TerrariaBridgePlugin(Main game) : base(game)
         {
@@ -38,7 +38,7 @@ namespace TerrariaBridge
             _worldSync = new WorldSyncHandler(_client);
             _entityHandler = new EntityHandler(_client);
             _commandHandler = new CommandHandler(_client);
-            _eventHandler = new EventHandler(_client);
+            _eventHandler = new BridgeEventHandler(_client);
 
             _client.OnConnected += OnBridgeConnected;
             _client.OnDisconnected += OnBridgeDisconnected;

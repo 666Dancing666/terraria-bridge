@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Terraria;
+using TerrariaBridge.Network;
 
 namespace TerrariaBridge.Handlers
 {
-    public class EventHandler
+    public class BridgeEventHandler
     {
         private BridgeClient _client;
         private int lastDayTime = -1;
@@ -13,7 +14,7 @@ namespace TerrariaBridge.Handlers
         private string lastWeather = "";
         private int weatherTimer = 0;
 
-        public EventHandler(BridgeClient client)
+        public BridgeEventHandler(BridgeClient client)
         {
             _client = client;
         }

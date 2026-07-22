@@ -29,11 +29,7 @@ namespace TerrariaBridge.Handlers
                     { "velocity_y", player.velocity.Y },
                     { "health", player.statLife },
                     { "max_health", player.statLifeMax2 },
-                    { "mana", player.statMana },
-                    { "max_mana", player.statManaMax2 },
-                    { "direction", player.direction },
-                    { "selected_item", player.selectedItem },
-                    { "team", player.team }
+                    { "direction", player.direction }
                 }
             };
         }
@@ -54,12 +50,7 @@ namespace TerrariaBridge.Handlers
                     { "velocity_y", npc.velocity.Y },
                     { "health", npc.life },
                     { "max_health", npc.lifeMax },
-                    { "direction", npc.direction },
-                    { "ai_0", npc.ai[0] },
-                    { "ai_1", npc.ai[1] },
-                    { "ai_2", npc.ai[2] },
-                    { "ai_3", npc.ai[3] },
-                    { "target", npc.target }
+                    { "direction", npc.direction }
                 }
             };
         }
@@ -76,8 +67,8 @@ namespace TerrariaBridge.Handlers
                     { "net_id", item.type },
                     { "stack", item.stack },
                     { "prefix", item.prefix },
-                    { "x", item.position.X },
-                    { "y", item.position.Y },
+                    { "x", 0f },
+                    { "y", 0f },
                 }
             };
         }
@@ -92,15 +83,11 @@ namespace TerrariaBridge.Handlers
                     { "entity_type", "projectile" },
                     { "id", proj.whoAmI },
                     { "net_id", proj.type },
-                    { "type", proj.type },
                     { "x", proj.position.X },
                     { "y", proj.position.Y },
                     { "velocity_x", proj.velocity.X },
                     { "velocity_y", proj.velocity.Y },
-                    { "owner", proj.owner },
-                    { "damage", proj.damage },
-                    { "ai_0", proj.ai[0] },
-                    { "ai_1", proj.ai[1] }
+                    { "owner", proj.owner }
                 }
             };
         }

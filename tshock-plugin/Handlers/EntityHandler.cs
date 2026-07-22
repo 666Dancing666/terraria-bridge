@@ -73,13 +73,11 @@ namespace TerrariaBridge.Handlers
                 {
                     { "entity_type", "item" },
                     { "id", index },
-                    { "net_id", item.netID },
+                    { "net_id", item.type },
                     { "stack", item.stack },
                     { "prefix", item.prefix },
-                    { "x", item.position.X },
-                    { "y", item.position.Y },
-                    { "velocity_x", item.velocity.X },
-                    { "velocity_y", item.velocity.Y }
+                    { "x", item.Center.X },
+                    { "y", item.Center.Y },
                 }
             };
         }

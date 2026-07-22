@@ -26,8 +26,9 @@ namespace TerrariaBridge.Handlers
             {
                 for (int y = startY; y <= endY; y++)
                 {
-                    Tile tile = Main.tile[x, y];
-                    if (tile == null) continue;
+                    ITile itile = Main.tile[x, y];
+                    if (itile == null) continue;
+                    Tile tile = (Tile)itile;
 
                     var tileData = new Dictionary<string, object>
                     {
@@ -77,8 +78,9 @@ namespace TerrariaBridge.Handlers
 
         public BridgeMessage CreateTileUpdate(int x, int y)
         {
-            Tile tile = Main.tile[x, y];
-            if (tile == null) return null;
+            ITile itile = Main.tile[x, y];
+            if (itile == null) return null;
+            Tile tile = (Tile)itile;
 
             return new BridgeMessage
             {
@@ -95,8 +97,9 @@ namespace TerrariaBridge.Handlers
 
         public BridgeMessage CreateWallUpdate(int x, int y)
         {
-            Tile tile = Main.tile[x, y];
-            if (tile == null) return null;
+            ITile itile = Main.tile[x, y];
+            if (itile == null) return null;
+            Tile tile = (Tile)itile;
 
             return new BridgeMessage
             {

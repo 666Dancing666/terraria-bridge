@@ -3,19 +3,23 @@
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <Version>0.1.0</Version>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="OTAPI">
-      <HintPath>lib/OTAPI.dll</HintPath>
-    </Reference>
     <Reference Include="TShockAPI">
-      <HintPath>lib/TShockAPI.dll</HintPath>
+      <HintPath>..\TShock\ServerPlugins\TShockAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="OTAPI">
+      <HintPath>..\TShock\bin\OTAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="OTAPI.Runtime">
+      <HintPath>..\TShock\bin\OTAPI.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="TerrariaServer">
-      <HintPath>lib/TerrariaServer.exe</HintPath>
+      <HintPath>..\TShock\bin\TerrariaServer.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 </Project>

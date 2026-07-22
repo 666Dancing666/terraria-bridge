@@ -29,9 +29,6 @@ namespace TerrariaBridge.Handlers
                     var tile = Main.tile[x, y];
                     if (tile == null) continue;
 
-                    bool hasData = tile.HasTile || tile.WallType > 0 || tile.LiquidAmount > 0;
-                    if (!hasData) continue;
-
                     var tileData = new Dictionary<string, object>
                     {
                         { "x", x },
@@ -40,29 +37,25 @@ namespace TerrariaBridge.Handlers
 
                     if (tile.HasTile)
                     {
-                        tileData["tile_type"] = tile.TileType;
-                        tileData["tile_frame_x"] = tile.TileFrameX;
-                        tileData["tile_frame_y"] = tile.TileFrameY;
-                        tileData["tile_color"] = tile.TileColor;
-                        tileData["half_brick"] = tile.IsHalfBlock;
-                        tileData["slope"] = (byte)tile.Slope;
+                        tileData["tile_type"] = (int)tile.TileType;
+                        tileData["has_tile"] = true;
                     }
 
                     if (tile.WallType > 0)
                     {
-                        tileData["wall_type"] = tile.WallType;
-                        tileData["wall_frame_x"] = tile.WallFrameX;
-                        tileData["wall_frame_y"] = tile.WallFrameY;
-                        tileData["wall_color"] = tile.WallColor;
+                        tileData["wall_type"] = (int)tile.WallType;
                     }
 
                     if (tile.LiquidAmount > 0)
                     {
-                        tileData["liquid_type"] = tile.LiquidType;
-                        tileData["liquid_amount"] = tile.LiquidAmount;
+                        tileData["liquid_type"] = (int)tile.LiquidType;
+                        tileData["liquid_amount"] = (int)tile.LiquidAmount;
                     }
 
-                    tiles.Add(tileData);
+                    if (tileData.Count > 2)
+                    {
+                        tiles.Add(tileData);
+                    }
                 }
             }
 
@@ -94,12 +87,7 @@ namespace TerrariaBridge.Handlers
                 {
                     { "x", x },
                     { "y", y },
-                    { "tile_type", tile.TileType },
-                    { "tile_frame_x", tile.TileFrameX },
-                    { "tile_frame_y", tile.TileFrameY },
-                    { "tile_color", tile.TileColor },
-                    { "half_brick", tile.IsHalfBlock },
-                    { "slope", (byte)tile.Slope },
+                    { "tile_type", (int)tile.TileType },
                     { "has_tile", tile.HasTile }
                 }
             };
@@ -117,10 +105,7 @@ namespace TerrariaBridge.Handlers
                 {
                     { "x", x },
                     { "y", y },
-                    { "wall_type", tile.WallType },
-                    { "wall_frame_x", tile.WallFrameX },
-                    { "wall_frame_y", tile.WallFrameY },
-                    { "wall_color", tile.WallColor }
+                    { "wall_type", (int)tile.WallType }
                 }
             };
         }

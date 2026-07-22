@@ -1,5 +1,4 @@
 using Terraria;
-using Terraria.ID;
 
 namespace TerrariaBridge.Utils
 {
@@ -11,33 +10,18 @@ namespace TerrariaBridge.Utils
             var tile = Main.tile[x, y];
             if (tile == null) return;
 
-            if (tile.HasTile)
+            WorldGen.KillTile(x, y, false, false, false);
+            if (Main.netMode == 2)
             {
-                WorldGen.KillTile(x, y, false, false, false);
-                if (Main.netMode == NetmodeID.Server)
-                {
-                    NetMessage.SendTileSquare(-1, x, y, 1);
-                }
-            }
-            else if (tile.WallType > 0)
-            {
-                WorldGen.KillWall(x, y, false);
-                if (Main.netMode == NetmodeID.Server)
-                {
-                    NetMessage.SendTileSquare(-1, x, y, 1);
-                }
+                NetMessage.SendTileSquare(-1, x, y, 1);
             }
         }
 
         public static void PlaceTile(int x, int y, int tileType, int playerId)
         {
             if (!WorldGen.InWorld(x, y)) return;
-            var tile = Main.tile[x, y];
-            if (tile == null) return;
-            if (tile.HasTile) return;
-
             WorldGen.PlaceTile(x, y, tileType, false, true, playerId);
-            if (Main.netMode == NetmodeID.Server)
+            if (Main.netMode == 2)
             {
                 NetMessage.SendTileSquare(-1, x, y, 1);
             }
@@ -46,12 +30,8 @@ namespace TerrariaBridge.Utils
         public static void PlaceWall(int x, int y, int wallType, int playerId)
         {
             if (!WorldGen.InWorld(x, y)) return;
-            var tile = Main.tile[x, y];
-            if (tile == null) return;
-            if (tile.WallType > 0) return;
-
             WorldGen.PlaceWall(x, y, wallType, false);
-            if (Main.netMode == NetmodeID.Server)
+            if (Main.netMode == 2)
             {
                 NetMessage.SendTileSquare(-1, x, y, 1);
             }

@@ -4,6 +4,8 @@
     <OutputType>Library</OutputType>
     <Version>0.1.0</Version>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="TShockAPI">
@@ -21,6 +23,5 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.Collections" Version="4.3.0" />
   </ItemGroup>
 </Project>

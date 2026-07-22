@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Terraria;
 using TerrariaBridge.Network;
 
@@ -18,10 +17,10 @@ namespace TerrariaBridge.Handlers
         {
             var tiles = new List<Dictionary<string, object>>();
 
-            int startX = (centerX - radiusX).Clamp(0, Main.maxTilesX - 1);
-            int endX = (centerX + radiusX).Clamp(0, Main.maxTilesX - 1);
-            int startY = (centerY - radiusY).Clamp(0, Main.maxTilesY - 1);
-            int endY = (centerY + radiusY).Clamp(0, Main.maxTilesY - 1);
+            int startX = Clamp(centerX - radiusX, 0, Main.maxTilesX - 1);
+            int endX = Clamp(centerX + radiusX, 0, Main.maxTilesX - 1);
+            int startY = Clamp(centerY - radiusY, 0, Main.maxTilesY - 1);
+            int endY = Clamp(centerY + radiusY, 0, Main.maxTilesY - 1);
 
             for (int x = startX; x <= endX; x++)
             {
@@ -31,7 +30,6 @@ namespace TerrariaBridge.Handlers
                     if (tile == null) continue;
 
                     bool hasData = tile.HasTile || tile.WallType > 0 || tile.LiquidAmount > 0;
-
                     if (!hasData) continue;
 
                     var tileData = new Dictionary<string, object>
@@ -68,7 +66,7 @@ namespace TerrariaBridge.Handlers
                 }
             }
 
-            var snapshot = new BridgeMessage
+            return new BridgeMessage
             {
                 Type = MessageType.WorldSnapshot,
                 Payload = new Dictionary<string, object>
@@ -82,8 +80,6 @@ namespace TerrariaBridge.Handlers
                     { "tiles", tiles }
                 }
             };
-
-            return snapshot;
         }
 
         public BridgeMessage CreateTileUpdate(int x, int y)
@@ -128,15 +124,12 @@ namespace TerrariaBridge.Handlers
                 }
             };
         }
-    }
-}
 
-public static class IntExtensions
-{
-    public static int Clamp(this int value, int min, int max)
-    {
-        if (value < min) return min;
-        if (value > max) return max;
-        return value;
+        private static int Clamp(int value, int min, int max)
+        {
+            if (value < min) return min;
+            if (value > max) return max;
+            return value;
+        }
     }
 }

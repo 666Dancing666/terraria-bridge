@@ -76,8 +76,8 @@ namespace TerrariaBridge.Handlers
                     { "net_id", item.type },
                     { "stack", item.stack },
                     { "prefix", item.prefix },
-                    { "x", item.Center.X },
-                    { "y", item.Center.Y },
+                    { "x", item.position.X },
+                    { "y", item.position.Y },
                 }
             };
         }
@@ -91,7 +91,7 @@ namespace TerrariaBridge.Handlers
                 {
                     { "entity_type", "projectile" },
                     { "id", proj.whoAmI },
-                    { "net_id", proj.netID },
+                    { "net_id", proj.type },
                     { "type", proj.type },
                     { "x", proj.position.X },
                     { "y", proj.position.Y },

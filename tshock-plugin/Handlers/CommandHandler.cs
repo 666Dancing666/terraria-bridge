@@ -28,9 +28,6 @@ namespace TerrariaBridge.Handlers
                 case MessageType.TilePlace:
                     HandleTilePlace(msg.Payload);
                     break;
-                case MessageType.Interact:
-                    HandleInteract(msg.Payload);
-                    break;
                 case MessageType.PlayerAction:
                     HandlePlayerAction(msg.Payload);
                     break;
@@ -63,7 +60,7 @@ namespace TerrariaBridge.Handlers
         {
             int x = Convert.ToInt32(payload["x"]);
             int y = Convert.ToInt32(payload["y"]);
-            TileHelper.BreakTile(x, y, -1);
+            TileHelper.BreakTile(x, y);
         }
 
         private void HandleTilePlace(Dictionary<string, object> payload)
@@ -71,25 +68,7 @@ namespace TerrariaBridge.Handlers
             int x = Convert.ToInt32(payload["x"]);
             int y = Convert.ToInt32(payload["y"]);
             int tileType = Convert.ToInt32(payload["tile_type"]);
-            TileHelper.PlaceTile(x, y, tileType, -1);
-        }
-
-        private void HandleInteract(Dictionary<string, object> payload)
-        {
-            int x = Convert.ToInt32(payload["x"]);
-            int y = Convert.ToInt32(payload["y"]);
-            int playerId = Convert.ToInt32(payload["player_id"]);
-
-            if (playerId >= 0 && playerId < Main.player.Length)
-            {
-                var player = Main.player[playerId];
-                if (player != null && player.active)
-                {
-                    player.tileInteractAttempted = true;
-                    player.tileInteractionX = x;
-                    player.tileInteractionY = y;
-                }
-            }
+            TileHelper.PlaceTile(x, y, tileType);
         }
 
         private void HandlePlayerAction(Dictionary<string, object> payload)
@@ -102,28 +81,23 @@ namespace TerrariaBridge.Handlers
                 var player = Main.player[playerId];
                 if (player != null && player.active)
                 {
-                    switch (action)
+                    if (action == "jump")
                     {
-                        case "jump":
-                            player.controlJump = true;
-                            player.releaseJump = false;
-                            break;
-                        case "use_item":
-                            player.controlUseItem = true;
-                            break;
-                        case "grapple":
-                            float targetX = player.position.X + player.direction * 160;
-                            float targetY = player.position.Y - 80;
-                            int tileX = (int)(targetX / 16);
-                            int tileY = (int)(targetY / 16);
-                            if (WorldGen.InWorld(tileX, tileY) && Main.tile[tileX, tileY] != null && Main.tile[tileX, tileY].HasTile)
-                            {
-                                player.position.X = targetX;
-                                player.position.Y = targetY;
-                                player.velocity.X = 0;
-                                player.velocity.Y = 0;
-                            }
-                            break;
+                        player.controlJump = true;
+                        player.releaseJump = false;
+                    }
+                    else if (action == "use_item")
+                    {
+                        player.controlUseItem = true;
+                    }
+                    else if (action == "grapple")
+                    {
+                        float targetX = player.position.X + player.direction * 160;
+                        float targetY = player.position.Y - 80;
+                        player.position.X = targetX;
+                        player.position.Y = targetY;
+                        player.velocity.X = 0;
+                        player.velocity.Y = 0;
                     }
                 }
             }
@@ -132,19 +106,17 @@ namespace TerrariaBridge.Handlers
         private void HandleCraftRequest(Dictionary<string, object> payload)
         {
             int playerId = 0;
-
             int resultId = Convert.ToInt32(payload["result_id"]);
             int resultCount = Convert.ToInt32(payload["result_count"]);
-
-            var ingredients = payload["ingredients"] as Dictionary<string, object>;
-            if (ingredients == null) return;
 
             if (playerId >= 0 && playerId < Main.player.Length)
             {
                 var player = Main.player[playerId];
                 if (player == null || !player.active) return;
 
-                bool hasAll = true;
+                var ingredients = payload["ingredients"] as Dictionary<string, object>;
+                if (ingredients == null) return;
+
                 var needed = new Dictionary<int, int>();
                 foreach (var kvp in ingredients)
                 {
@@ -153,21 +125,16 @@ namespace TerrariaBridge.Handlers
                     needed[itemId] = count;
                 }
 
+                bool hasAll = true;
                 foreach (var kvp in needed)
                 {
                     int count = 0;
                     for (int i = 0; i < player.inventory.Length; i++)
                     {
                         if (player.inventory[i].type == kvp.Key)
-                        {
                             count += player.inventory[i].stack;
-                        }
                     }
-                    if (count < kvp.Value)
-                    {
-                        hasAll = false;
-                        break;
-                    }
+                    if (count < kvp.Value) { hasAll = false; break; }
                 }
 
                 if (hasAll)
@@ -183,13 +150,10 @@ namespace TerrariaBridge.Handlers
                                 player.inventory[i].stack -= take;
                                 remaining -= take;
                                 if (player.inventory[i].stack <= 0)
-                                {
                                     player.inventory[i].TurnToAir();
-                                }
                             }
                         }
                     }
-
                     player.QuickSpawnItem(null, resultId, resultCount);
                 }
             }

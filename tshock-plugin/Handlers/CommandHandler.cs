@@ -107,22 +107,15 @@ namespace TerrariaBridge.Handlers
                         case "jump":
                             player.controlJump = true;
                             player.releaseJump = false;
-                            if (player.velocity.Y == 0)
-                            {
-                                player.velocity.Y = -player.jumpSpeed;
-                            }
                             break;
                         case "use_item":
                             player.controlUseItem = true;
                             break;
                         case "grapple":
-                        {
                             float targetX = player.position.X + player.direction * 160;
                             float targetY = player.position.Y - 80;
-
                             int tileX = (int)(targetX / 16);
                             int tileY = (int)(targetY / 16);
-
                             if (WorldGen.InWorld(tileX, tileY) && Main.tile[tileX, tileY] != null && Main.tile[tileX, tileY].HasTile)
                             {
                                 player.position.X = targetX;
@@ -131,10 +124,6 @@ namespace TerrariaBridge.Handlers
                                 player.velocity.Y = 0;
                             }
                             break;
-                        }
-                        case "grapple":
-                            player.controlHook = true;
-                            break;
                     }
                 }
             }
@@ -142,15 +131,7 @@ namespace TerrariaBridge.Handlers
 
         private void HandleCraftRequest(Dictionary<string, object> payload)
         {
-            int playerId = -1;
-            if (payload.ContainsKey("player_id"))
-            {
-                string pid = payload["player_id"].ToString();
-                if (pid.StartsWith("MC-"))
-                {
-                    playerId = 0;
-                }
-            }
+            int playerId = 0;
 
             int resultId = Convert.ToInt32(payload["result_id"]);
             int resultCount = Convert.ToInt32(payload["result_count"]);
@@ -177,7 +158,7 @@ namespace TerrariaBridge.Handlers
                     int count = 0;
                     for (int i = 0; i < player.inventory.Length; i++)
                     {
-                        if (player.inventory[i].netID == kvp.Key)
+                        if (player.inventory[i].type == kvp.Key)
                         {
                             count += player.inventory[i].stack;
                         }
@@ -196,7 +177,7 @@ namespace TerrariaBridge.Handlers
                         int remaining = kvp.Value;
                         for (int i = 0; i < player.inventory.Length && remaining > 0; i++)
                         {
-                            if (player.inventory[i].netID == kvp.Key)
+                            if (player.inventory[i].type == kvp.Key)
                             {
                                 int take = Math.Min(remaining, player.inventory[i].stack);
                                 player.inventory[i].stack -= take;
@@ -209,11 +190,7 @@ namespace TerrariaBridge.Handlers
                         }
                     }
 
-                    int slot = Item.NewItem(player.getRect(), resultId, resultCount);
-                    if (slot >= 0 && slot < player.inventory.Length)
-                    {
-                        player.inventory[slot] = Main.item[slot];
-                    }
+                    player.QuickSpawnItem(null, resultId, resultCount);
                 }
             }
         }
